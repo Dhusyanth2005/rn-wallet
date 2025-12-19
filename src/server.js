@@ -3,18 +3,21 @@ import dotenv from 'dotenv';
 import {initDB} from './config/db.js';
 import rateLimiter from './middleware/rateLimiter.js';
 import transactionRoutes from './router/transactionRoutes.js';
+import job from './config/cron.js'
 dotenv.config();
 
 const app = express();
+
+if (process.env.NODE_ENV === "production") job.start();
 const PORT = process.env.PORT || 5000;
 app.use(rateLimiter);
 app.use(express.json());
 
 app.use('/api/transactions',transactionRoutes);
-app.get('/health', (req, res) => {
-  res.send('Expense Tracker API is running');
-});
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({status:'ok'})
+});
 
 initDB().then(()=>{
   app.listen(PORT, () => {
